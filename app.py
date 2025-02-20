@@ -1,4 +1,4 @@
-from flask import Flask , render_template
+from flask import Flask , render_template,request,redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -15,20 +15,37 @@ class Todo(db.Model):
     def __repr__(self)->str:
         return f"{self.sno} - {self.title}"
 
-@app.route("/")
+@app.route("/",methods=['GET','POST'])
 def hello_world():
-    todo=Todo(title="First Todo", desc="Start investing in stock market")
-    db.session.add(todo)
-    db.session.commit()
+    if request.method=='POST':
+       title=request.form['title']
+       desc=request.form['desc']
+       
+       todo=Todo(title= title, desc=desc)
+       db.session.add(todo)
+       db.session.commit()
     allTodo = Todo.query.all()
-    return render_template('index.html',allTodo=allTodo)
-    #return "Hello, World!"
+    return render_template('index.html', allTodo=allTodo)
 
 @app.route('/show')
 def Products():
     allTodo = Todo.query.all()
     print(allTodo)
     return "This is a product page"
+
+@app.route('/update')
+def update():
+    allTodo = Todo.query.all()
+    print(allTodo)
+    return "This is a product page"
+
+@app.route('/delete/<int:sno>')
+def delete(sno):
+    todo = Todo.query.filter_by(sno= sno).first()
+    db.session.delete(todo)
+    db.session.commit()
+    return redirect("/")
+
 if __name__ =="__main__":
    with app.app_context():
     db.drop_all()
